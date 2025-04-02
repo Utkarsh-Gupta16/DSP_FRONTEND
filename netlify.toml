@@ -1,0 +1,8 @@
+[build]
+  publish = "build"  # The folder where your static files are generated (default for React is "build")
+  command = "npm run build"  # The command to generate your static files
+
+[[redirects]]
+  from = "/*"  # Redirect all routes
+  to = "/index.html"  # Serve the index.html file for all routes
+  status = 200  # HTTP status code (200 means "OK")
