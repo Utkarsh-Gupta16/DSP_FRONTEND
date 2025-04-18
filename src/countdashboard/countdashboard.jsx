@@ -58,7 +58,7 @@ const categoryIcons = {
   "Travel Tourism": { icon: <FaPlane />, color: "#4A90E2" },
 };
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://dsp-backend.onrender.com";
 
 const advancedFilterOptions = [
   { value: "revenueRange", label: "Revenue Range" },

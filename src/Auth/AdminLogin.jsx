@@ -20,7 +20,7 @@ const AdminLogin = () => {
     setError("");
     setSuccess("");
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post("https://dsp-backend.onrender.com/api/auth/login", {
         email,
         password,
       });
@@ -49,7 +49,7 @@ const AdminLogin = () => {
     setSuccess("");
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/google/verify",
+        "https://dsp-backend.onrender.com/api/auth/google/verify",
         { token: response.credential },
         { withCredentials: true }
       );
@@ -104,7 +104,7 @@ const AdminLogin = () => {
     setForgotSuccess("");
     setIsSubmitting(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/forgot-password", {
+      const response = await axios.post("https://dsp-backend.onrender.com/api/auth/forgot-password", {
         email: forgotEmail,
       });
       setForgotSuccess(response.data.message || "A password reset link has been sent to your email.");

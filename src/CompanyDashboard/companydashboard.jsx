@@ -37,10 +37,10 @@ const CompanyDashboard = () => {
   const fetchFilterOptions = async () => {
     try {
       const [catRes, subCatRes, countryRes, stateRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/companies/filters?field=category"),
-        axios.get("http://localhost:5000/api/companies/filters?field=subCategory"),
-        axios.get("http://localhost:5000/api/companies/filters?field=Country"),
-        axios.get("http://localhost:5000/api/companies/filters?field=State"),
+        axios.get("https://dsp-backend.onrender.com/api/companies/filters?field=category"),
+        axios.get("https://dsp-backend.onrender.com/api/companies/filters?field=subCategory"),
+        axios.get("https://dsp-backend.onrender.com/api/companies/filters?field=Country"),
+        axios.get("https://dsp-backend.onrender.com/api/companies/filters?field=State"),
       ]);
       setCategories(catRes.data.map((cat) => ({ value: cat, label: formatString(cat) })));
       setSubCategories(subCatRes.data.map((subCat) => ({ value: subCat, label: formatString(subCat) })));
@@ -56,7 +56,7 @@ const CompanyDashboard = () => {
     try {
       setLoading(true);
       console.log("Fetching company data from /api/companies/");
-      const response = await axios.get("http://localhost:5000/api/companies/", {
+      const response = await axios.get("https://dsp-backend.onrender.com/api/companies/", {
         params: {
           category: selectedFilters.category,
           subCategory: selectedFilters.subCategory,

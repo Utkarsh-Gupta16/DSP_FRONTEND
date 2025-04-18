@@ -41,7 +41,7 @@ const EmployeeSignup = () => {
     try {
         const requestBody = { name, email, phone, password, role: "employee" };
         console.log("Request body being sent:", requestBody);
-        const response = await axios.post("http://localhost:5000/api/auth/register", requestBody);
+        const response = await axios.post("https://dsp-backend.onrender.com/api/auth/register", requestBody);
         console.log("Signup successful:", response.data);
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));

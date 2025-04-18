@@ -20,7 +20,7 @@ const DemoRequestsTab = () => {
         setError("No authentication token found. Please log in again.");
         return;
       }
-      const response = await axios.get("http://localhost:5000/api/demo", {
+      const response = await axios.get("https://dsp-backend.onrender.com/api/demo", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDemoRequests(response.data);
@@ -37,7 +37,7 @@ const DemoRequestsTab = () => {
         setError("No authentication token found. Please log in again.");
         return;
       }
-      const response = await axios.get("http://localhost:5000/api/users/employee", {
+      const response = await axios.get("https://dsp-backend.onrender.com/api/users/employee", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setEmployees(response.data);
@@ -59,7 +59,7 @@ const DemoRequestsTab = () => {
         return;
       }
       await axios.put(
-        `http://localhost:5000/api/demo/assign/${requestId}`,
+        `https://dsp-backend.onrender.com/api/demo/assign/${requestId}`,
         { assignedTo: selectedEmployeeId }, // Changed from employeeId to assignedTo
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -82,7 +82,7 @@ const DemoRequestsTab = () => {
         return;
       }
       await axios.put(
-        `http://localhost:5000/api/demo/cancel/${requestId}`,
+        `https://dsp-backend.onrender.com/api/demo/cancel/${requestId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

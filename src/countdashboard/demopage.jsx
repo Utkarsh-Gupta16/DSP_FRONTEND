@@ -4,7 +4,7 @@ import axios from "axios";
 
 // Set axios base URL
 const api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "https://dsp-backend.onrender.com",
 });
 
 const DemoPage = () => {

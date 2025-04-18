@@ -158,11 +158,11 @@ const AdminDashboard = () => {
         employeesResponse,
         pendingApprovalsResponse,
       ] = await Promise.all([
-        axios.get("http://localhost:5000/api/payment/orders", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:5000/api/payment/admin/assigned-companies", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:5000/api/payment/admin/tasks", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:5000/api/users/employee", { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get("http://localhost:5000/api/company-details/pending-approvals", { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get("https://dsp-backend.onrender.com/api/payment/orders", { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get("https://dsp-backend.onrender.com/api/payment/admin/assigned-companies", { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get("https://dsp-backend.onrender.com/api/payment/admin/tasks", { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get("https://dsp-backend.onrender.com/api/users/employee", { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get("https://dsp-backend.onrender.com/api/company-details/pending-approvals", { headers: { Authorization: `Bearer ${token}` } }),
       ]);
   
       setOrders(ordersResponse.data || []);
@@ -214,7 +214,7 @@ const AdminDashboard = () => {
         setError("No employees available to distribute companies.");
         return;
       }
-      const orderResponse = await axios.get(`http://localhost:5000/api/payment/orders/${orderId}`, {
+      const orderResponse = await axios.get(`https://dsp-backend.onrender.com/api/payment/orders/${orderId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const order = orderResponse.data;
@@ -228,7 +228,7 @@ const AdminDashboard = () => {
         ...(order.filters.city?.value && { City: order.filters.city.value }),
       };
       const companyCountResponse = await axios.post(
-        "http://localhost:5000/api/payment/count-companies",
+        "https://dsp-backend.onrender.com/api/payment/count-companies",
         { query },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -248,7 +248,7 @@ const AdminDashboard = () => {
         const endIndex = startIndex + companyCount - 1;
         tasks.push(
           axios.post(
-            "http://localhost:5000/api/payment/admin/assign-task",
+            "https://dsp-backend.onrender.com/api/payment/admin/assign-task",
             { orderId, employeeId: employee._id, companyCount, startIndex, endIndex },
             { headers: { Authorization: `Bearer ${token}` } }
           )
@@ -291,7 +291,7 @@ const AdminDashboard = () => {
 
       const addOns = order.addOns || [];
       const response = await axios.post(
-        "http://localhost:5000/api/admin/email/send-order-email",
+        "https://dsp-backend.onrender.com/api/admin/email/send-order-email",
         {
           orderId,
           email,
@@ -336,7 +336,7 @@ const AdminDashboard = () => {
         companyCount: companyCountValue,
       };
       const response = await axios.post(
-        "http://localhost:5000/api/payment/admin/assign-task",
+        "https://dsp-backend.onrender.com/api/payment/admin/assign-task",
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -359,7 +359,7 @@ const AdminDashboard = () => {
         return;
       }
       await axios.put(
-        `http://localhost:5000/api/payment/admin/update-order-status/${orderId}`,
+        `https://dsp-backend.onrender.com/api/payment/admin/update-order-status/${orderId}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -380,7 +380,7 @@ const AdminDashboard = () => {
           navigate("/login");
           return;
         }
-        await axios.delete(`http://localhost:5000/api/payment/admin/delete-tasks/${employeeId}`, {
+        await axios.delete(`https://dsp-backend.onrender.com/api/payment/admin/delete-tasks/${employeeId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert(`Tasks deleted successfully for ${employees.find((emp) => emp._id === employeeId)?.name || employeeId}`);
@@ -401,7 +401,7 @@ const AdminDashboard = () => {
           navigate("/login");
           return;
         }
-        await axios.delete(`http://localhost:5000/api/payment/admin/delete-task/${taskId}`, {
+        await axios.delete(`https://dsp-backend.onrender.com/api/payment/admin/delete-task/${taskId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert(`Task with ID ${taskId} deleted successfully`);
@@ -422,7 +422,7 @@ const AdminDashboard = () => {
           navigate("/login");
           return;
         }
-        await axios.delete(`http://localhost:5000/api/payment/admin/clear-all-tasks`, {
+        await axios.delete(`https://dsp-backend.onrender.com/api/payment/admin/clear-all-tasks`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("All tasks cleared successfully!");
@@ -443,7 +443,7 @@ const AdminDashboard = () => {
         return;
       }
       const response = await axios.put(
-        `http://localhost:5000/api/company-details/approve-company-details/${companyDetailId}`,
+        `https://dsp-backend.onrender.com/api/company-details/approve-company-details/${companyDetailId}`,
         { status, returnToEmployee: status === "rejected" },
         { headers: { Authorization: `Bearer ${token}` } }
       );

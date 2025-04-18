@@ -19,7 +19,7 @@ const SearchCount = ({ filters, normalizeCountry, normalizeString }) => {
       const fetchCountWithRetry = async (params, retries = 3, delay = 1000) => {
         for (let i = 0; i < retries; i++) {
           try {
-            const response = await axios.get("http://localhost:5000/api/companies/count", {
+            const response = await axios.get("https://dsp-backend.onrender.com/api/companies/count", {
               params,
               timeout: 15000,
             });

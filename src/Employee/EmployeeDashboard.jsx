@@ -153,26 +153,26 @@ const EmployeeDashboard = () => {
         const decodedToken = jwtDecode(token);
         const userId = decodedToken.id;
 
-        const profileResponse = await axios.get("http://localhost:5000/api/users/me", {
+        const profileResponse = await axios.get("https://dsp-backend.onrender.com/api/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = profileResponse.data;
         setUser(userData);
 
-        const tasksResponse = await axios.get("http://localhost:5000/api/payment/employee/tasks", {
+        const tasksResponse = await axios.get("https://dsp-backend.onrender.com/api/payment/employee/tasks", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const tasksData = tasksResponse.data;
 
         const taskPromises = tasksData.map(async (task) => {
-          const companiesResponse = await axios.get("http://localhost:5000/api/payment/employee/companies", {
+          const companiesResponse = await axios.get("https://dsp-backend.onrender.com/api/payment/employee/companies", {
             headers: { Authorization: `Bearer ${token}` },
             params: { taskId: task._id },
           });
           const taskCompaniesData = companiesResponse.data;
 
           const taskCompanies = taskCompaniesData.find((c) => c.taskId.toString() === task._id.toString()) || { companies: [], range: [] };
-          const rejectedResponse = await axios.get("http://localhost:5000/api/company-details/rejected-companies", {
+          const rejectedResponse = await axios.get("https://dsp-backend.onrender.com/api/company-details/rejected-companies", {
             headers: { Authorization: `Bearer ${token}` },
             params: { employeeId: userId, taskId: task._id },
           });
@@ -191,19 +191,19 @@ const EmployeeDashboard = () => {
         const updatedTasks = await Promise.all(taskPromises);
         setTasks(updatedTasks);
 
-        const historyResponse = await axios.get("http://localhost:5000/api/company-details/employee-history-with-companies", {
+        const historyResponse = await axios.get("https://dsp-backend.onrender.com/api/company-details/employee-history-with-companies", {
           headers: { Authorization: `Bearer ${token}` },
           params: { employeeId: userId },
         });
         setHistory(historyResponse.data || []);
 
-        const submittedResponse = await axios.get("http://localhost:5000/api/company-details/submitted-companies", {
+        const submittedResponse = await axios.get("https://dsp-backend.onrender.com/api/company-details/submitted-companies", {
           headers: { Authorization: `Bearer ${token}` },
           params: { employeeId: userId },
         });
         setSubmittedCompanies(new Set(submittedResponse.data.map((c) => c.companyId.toString())));
 
-        const demoResponse = await axios.get("http://localhost:5000/api/demo/employee", {
+        const demoResponse = await axios.get("https://dsp-backend.onrender.com/api/demo/employee", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setDemoRequests(demoResponse.data || []);
@@ -247,7 +247,7 @@ const EmployeeDashboard = () => {
         return;
       }
 
-      await axios.patch(`http://localhost:5000/api/company-details/rejected-companies/${companyId}/resubmit`, {}, {
+      await axios.patch(`https://dsp-backend.onrender.com/api/company-details/rejected-companies/${companyId}/resubmit`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("Company resubmitted for approval!");
@@ -255,18 +255,18 @@ const EmployeeDashboard = () => {
         const token = localStorage.getItem("token");
         const decodedToken = jwtDecode(token);
         const userId = decodedToken.id;
-        const tasksResponse = await axios.get("http://localhost:5000/api/payment/employee/tasks", {
+        const tasksResponse = await axios.get("https://dsp-backend.onrender.com/api/payment/employee/tasks", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const tasksData = tasksResponse.data;
         const taskPromises = tasksData.map(async (task) => {
-          const companiesResponse = await axios.get("http://localhost:5000/api/payment/employee/companies", {
+          const companiesResponse = await axios.get("https://dsp-backend.onrender.com/api/payment/employee/companies", {
             headers: { Authorization: `Bearer ${token}` },
             params: { taskId: task._id },
           });
           const taskCompaniesData = companiesResponse.data;
           const taskCompanies = taskCompaniesData.find((c) => c.taskId.toString() === task._id.toString()) || { companies: [], range: [] };
-          const rejectedResponse = await axios.get("http://localhost:5000/api/company-details/rejected-companies", {
+          const rejectedResponse = await axios.get("https://dsp-backend.onrender.com/api/company-details/rejected-companies", {
             headers: { Authorization: `Bearer ${token}` },
             params: { employeeId: userId, taskId: task._id },
           });
@@ -338,7 +338,7 @@ const EmployeeDashboard = () => {
       }
       const orderId = task.orderId._id;
 
-      await axios.post("http://localhost:5000/api/company-details/submit-company-details", {
+      await axios.post("https://dsp-backend.onrender.com/api/company-details/submit-company-details", {
         companyId: selectedCompany._id,
         orderId: orderId,
         ...formData,
@@ -386,7 +386,7 @@ const EmployeeDashboard = () => {
       });
 
       await Promise.all(submissions.map(submission =>
-        axios.post("http://localhost:5000/api/company-details/submit-company-details", submission, {
+        axios.post("https://dsp-backend.onrender.com/api/company-details/submit-company-details", submission, {
           headers: { Authorization: `Bearer ${token}` },
         })
       ));
@@ -420,14 +420,14 @@ const EmployeeDashboard = () => {
         return;
       }
       await axios.post(
-        `http://localhost:5000/api/demo/send-meeting-link/${requestId}`,
+        `https://dsp-backend.onrender.com/api/demo/send-meeting-link/${requestId}`,
         { meetingLink },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("Meeting link sent and saved successfully!");
       setMeetingLink("");
       setSelectedDemoRequest(null);
-      const demoResponse = await axios.get("http://localhost:5000/api/demo/employee", {
+      const demoResponse = await axios.get("https://dsp-backend.onrender.com/api/demo/employee", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDemoRequests(demoResponse.data || []);
@@ -446,12 +446,12 @@ const EmployeeDashboard = () => {
         return;
       }
       await axios.put(
-        `http://localhost:5000/api/demo/cancel/${requestId}`,
+        `https://dsp-backend.onrender.com/api/demo/cancel/${requestId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("Demo request cancelled successfully!");
-      const demoResponse = await axios.get("http://localhost:5000/api/demo/employee", {
+      const demoResponse = await axios.get("https://dsp-backend.onrender.com/api/demo/employee", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDemoRequests(demoResponse.data || []);

@@ -17,7 +17,7 @@ const Location = ({ onLocationChange }) => {
 
   const fetchCountries = async () => {
     try {
-      const countryRes = await axios.get("http://localhost:5000/api/companies/filters?field=Country");
+      const countryRes = await axios.get("https://dsp-backend.onrender.com/api/companies/filters?field=Country");
       setCountries(countryRes.data.map((country) => ({ value: country, label: country })));
     } catch (err) {
       setError("Error loading countries.");
@@ -28,13 +28,13 @@ const Location = ({ onLocationChange }) => {
   const fetchDependentFilters = async () => {
     try {
       if (selectedFilters.country?.value) {
-        const stateRes = await axios.get("http://localhost:5000/api/companies/filters?field=State", {
+        const stateRes = await axios.get("https://dsp-backend.onrender.com/api/companies/filters?field=State", {
           params: { country: selectedFilters.country.value },
         });
         setStates(stateRes.data.map((state) => ({ value: state, label: state })));
       }
       if (selectedFilters.state?.value) {
-        const cityRes = await axios.get("http://localhost:5000/api/companies/filters?field=City", {
+        const cityRes = await axios.get("https://dsp-backend.onrender.com/api/companies/filters?field=City", {
           params: { country: selectedFilters.country.value, state: selectedFilters.state.value },
         });
         setCities(cityRes.data.map((city) => ({ value: city, label: city })));

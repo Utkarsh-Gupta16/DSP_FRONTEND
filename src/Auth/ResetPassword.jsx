@@ -15,7 +15,7 @@ const ResetPassword = () => {
   useEffect(() => {
     const validateToken = async () => {
       try {
-        await axios.get(`http://localhost:5000/api/auth/reset-password/${token}`);
+        await axios.get(`https://dsp-backend.onrender.com/api/auth/reset-password/${token}`);
         setIsTokenValid(true);
       } catch (err) {
         setError(err.response?.data?.message || "Invalid or expired reset token");
@@ -35,7 +35,7 @@ const ResetPassword = () => {
       return;
     }
     try {
-      const response = await axios.post(`http://localhost:5000/api/auth/reset-password/${token}`, {
+      const response = await axios.post(`https://dsp-backend.onrender.com/api/auth/reset-password/${token}`, {
         password,
       });
       setSuccess(response.data.message || "Password has been reset successfully");
