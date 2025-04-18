@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
-const Login = () => {
+const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,12 +27,13 @@ const Login = () => {
       console.log("Login successful:", response.data);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      if (response.data.user.role === "user") {
-        const from = location.state?.from || "/count";
+
+      if (response.data.user.role === "admin" && response.data.user.email === "admin@dataselling.com") {
+        const from = location.state?.from || "/admin";
         const action = location.state?.action;
         navigate(from, { state: { action } });
       } else {
-        setError("Unauthorized access. Please use the appropriate login page.");
+        setError("Unauthorized access. Only the admin can log in here.");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
@@ -41,9 +42,8 @@ const Login = () => {
       setError(err.response?.data?.message || "Login failed. Please try again.");
     }
   };
-
   const handleGoogleSuccess = async (response) => {
-    console.log("Google Sign-In successful in UserLogin:", response);
+    console.log("Google Sign-In successful in AdminLogin:", response);
     console.log("Token being sent to backend:", response.credential);
     setError("");
     setSuccess("");
@@ -56,23 +56,24 @@ const Login = () => {
       console.log("Google login successful:", res.data);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      if (res.data.user.role === "user") {
-        const from = location.state?.from || "/count";
+
+      if (res.data.user.role === "admin" && res.data.user.email === "admin@dataselling.com") {
+        const from = location.state?.from || "/admin";
         const action = location.state?.action;
         navigate(from, { state: { action } });
       } else {
-        setError("Unauthorized access. Please use the appropriate login page.");
+        setError("Unauthorized access. Only the admin can log in here.");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
     } catch (err) {
-      console.error("Google login error in UserLogin:", err.response?.data || err.message);
+      console.error("Google login error in AdminLogin:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Google login failed.");
     }
   };
 
   const handleGoogleError = () => {
-    console.error("Google login failed at client-side in UserLogin");
+    console.error("Google login failed at client-side in AdminLogin");
     setError("Google login failed at client-side.");
   };
 
@@ -125,7 +126,7 @@ const Login = () => {
         </div>
   
         <h1 className="text-3xl font-bold mb-2">
-          {showForgotPassword ? "Forgot Password" : "Login"}
+          {showForgotPassword ? "Forgot Password" : "Admin Login"}
         </h1>
         <p className="text-gray-500 mb-6">
           {showForgotPassword ? "Reset your password" : "Login Your Account"}
@@ -144,7 +145,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="Enter Email"
+              placeholder="wxyz@gmail.com"
               className="w-full mb-4 p-3 bg-gray-100 rounded-md"
             />
   
@@ -156,7 +157,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="@Enter Password"
+              placeholder="@#12345Amng"
               className="w-full mb-6 p-3 bg-gray-100 rounded-md"
             />
   
@@ -178,7 +179,7 @@ const Login = () => {
               onChange={(e) => setForgotEmail(e.target.value)}
               required
               disabled={isSubmitting}
-              placeholder="Enter Email"
+              placeholder="wxyz@gmail.com"
               className="w-full mb-4 p-3 bg-gray-100 rounded-md"
             />
   
@@ -258,7 +259,6 @@ const Login = () => {
       </div>
     </div>
   );
-  
 };
 
-export default Login;
+export default AdminLogin;

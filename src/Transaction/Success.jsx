@@ -1,27 +1,35 @@
+// Success.jsx
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // For animations
-import { FaCheckCircle } from "react-icons/fa"; // For a checkmark icon
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { FaCheckCircle } from "react-icons/fa";
 
 const Success = () => {
   const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(5); // 5-second countdown
+  const { state } = useLocation();
+  const { totalCount = 0, selectedAddons = [] } = state || {};
+  const [countdown, setCountdown] = useState(5);
 
-  // Countdown timer logic
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate("/"); // Redirect to homepage after countdown
+          navigate("/");
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer); // Cleanup on unmount
+    return () => clearInterval(timer);
   }, [navigate]);
+
+  // Calculate delivery days if add-ons are selected
+  const deliveryDays = selectedAddons.length > 0 ? Math.ceil(totalCount / 1000) : 0;
+  const successMessage = selectedAddons.length > 0
+    ? `Thank you for your purchase! Your company data, including any selected add-ons, will be sent to your email as a CSV or ZIP file within ${deliveryDays} days.`
+    : "Thank you for your purchase! A CSV file with the company data will be sent to your email shortly.";
 
   return (
     <div
@@ -30,7 +38,7 @@ const Success = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(135deg, #e0f7fa 0%, #80deea 100%)", // Gradient background
+        background: "linear-gradient(135deg, #e0f7fa 0%, #80deea 100%)",
         fontFamily: "Arial, sans-serif",
         padding: "20px",
       }}
@@ -49,7 +57,6 @@ const Success = () => {
           width: "100%",
         }}
       >
-        {/* Success Icon */}
         <motion.div
           initial={{ y: -20 }}
           animate={{ y: 0 }}
@@ -58,7 +65,6 @@ const Success = () => {
           <FaCheckCircle size={60} color="#28a745" />
         </motion.div>
 
-        {/* Success Message */}
         <h1
           style={{
             fontSize: "28px",
@@ -76,10 +82,9 @@ const Success = () => {
             marginBottom: "20px",
           }}
         >
-          Thank you for your purchase! A CSV file with the company data will be sent to your email shortly.
+          {successMessage}
         </p>
 
-        {/* Countdown Timer */}
         <div
           style={{
             fontSize: "18px",
@@ -101,7 +106,6 @@ const Success = () => {
           seconds...
         </div>
 
-        {/* Redirect Button (Optional) */}
         <button
           onClick={() => navigate("/")}
           style={{

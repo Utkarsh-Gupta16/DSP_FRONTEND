@@ -1,6 +1,7 @@
+// Transaction.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import api from "../utils/api.js"; // Import the new API client
+import api from "../utils/api.js";
 import { Elements } from "@stripe/react-stripe-js";
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
@@ -11,7 +12,6 @@ const PaymentForm = ({ onSubmit, loading, error, setError }) => {
 
   const handlePayment = async (e) => {
     e.preventDefault();
-
     setError(null);
 
     try {
@@ -55,11 +55,7 @@ const PaymentForm = ({ onSubmit, loading, error, setError }) => {
         <label style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>
           Payment Details (Powered by Stripe)
         </label>
-        <PaymentElement
-          options={{
-            layout: "tabs",
-          }}
-        />
+        <PaymentElement options={{ layout: "tabs" }} />
       </div>
       <button
         type="submit"
@@ -92,25 +88,31 @@ const Transaction = ({ stripePromise }) => {
 
   const filters = state?.filters || {};
   const totalCount = state?.totalCount || 0;
+  const selectedAddons = state?.selectedAddons || []; // Receive selectedAddons from CountDashboard
   const country = filters?.country?.label || "US";
 
-  // Dynamic pricing logic
-  const calculatePrice = (count) => {
+  // Dynamic pricing logic including add-ons
+  const calculatePrice = (count, addons) => {
     const threshold = 100000;
-    const rateFirstTier = 0.01;
-    const rateSecondTier = 0.005;
+    const rateFirstTier = 0.01; // Base rate per company
+    const rateSecondTier = 0.005; // Reduced rate for companies above threshold
+    const addonRate = 0.01; // $0.01 per company per add-on
 
+    let basePrice;
     if (count <= threshold) {
-      return (count * rateFirstTier).toFixed(2);
+      basePrice = count * rateFirstTier;
     } else {
       const firstTierCost = threshold * rateFirstTier;
       const secondTierCount = count - threshold;
       const secondTierCost = secondTierCount * rateSecondTier;
-      return (firstTierCost + secondTierCost).toFixed(2);
+      basePrice = firstTierCost + secondTierCost;
     }
+
+    const addonCost = count * addonRate * addons.length; // Add-on cost: $0.01 per company per add-on
+    return (basePrice + addonCost).toFixed(2);
   };
 
-  const price = calculatePrice(totalCount);
+  const price = calculatePrice(totalCount, selectedAddons);
 
   // Fetch the client secret for Stripe payment
   useEffect(() => {
@@ -122,9 +124,12 @@ const Transaction = ({ stripePromise }) => {
           return;
         }
 
-        console.log("Sending request to create-payment-intent:", { totalCount, country });
-
-        const response = await api.post("/payment/create-payment-intent", { totalCount, country });
+        console.log("Sending request to create-payment-intent:", { totalCount, country, selectedAddons });
+        const response = await api.post("/payment/create-payment-intent", {
+          totalCount,
+          country,
+          selectedAddons: selectedAddons.map(addon => addon.value), // Send add-on values
+        });
         console.log("Client secret received:", response.data.clientSecret);
         setClientSecret(response.data.clientSecret);
       } catch (err) {
@@ -133,7 +138,7 @@ const Transaction = ({ stripePromise }) => {
       }
     };
     fetchClientSecret();
-  }, [totalCount, country]);
+  }, [totalCount, country, selectedAddons]);
 
   // Timer logic
   useEffect(() => {
@@ -157,27 +162,29 @@ const Transaction = ({ stripePromise }) => {
     return `${minutes.toString().padStart(2, "0")} : ${secs.toString().padStart(2, "0")}`;
   };
 
-  const handlePaymentSuccess = async (paymentIntent) => {
-    setLoading(true);
-    try {
-      console.log("Payment successful, submitting payment details...");
-      const submitResponse = await api.post("/payment/submit", {
-        filters,
-        totalCount,
-        price,
-        paymentIntentId: paymentIntent.id,
-      });
-      console.log("Submit response:", submitResponse.data);
+// Transaction.jsx (partial update)
+// Inside the Transaction component, update handlePaymentSuccess
+const handlePaymentSuccess = async (paymentIntent) => {
+  setLoading(true);
+  try {
+    console.log("Payment successful, submitting payment details...");
+    const submitResponse = await api.post("/payment/submit", {
+      filters,
+      totalCount,
+      price,
+      paymentIntentId: paymentIntent.id,
+      selectedAddons: selectedAddons.map(addon => addon.value),
+    });
+    console.log("Submit response:", submitResponse.data);
 
-      setLoading(false);
-      // Redirect to the success page
-      navigate("/success");
-    } catch (err) {
-      setLoading(false);
-      console.error("Error in handlePaymentSuccess:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to submit payment details. Please try again.");
-    }
-  };
+    setLoading(false);
+    navigate("/success", { state: { totalCount, selectedAddons } }); // Pass state to Success
+  } catch (err) {
+    setLoading(false);
+    console.error("Error in handlePaymentSuccess:", err.response?.data || err.message);
+    setError(err.response?.data?.message || "Failed to submit payment details. Please try again.");
+  }
+};
 
   // Format filter labels
   const formatString = (str) => {
@@ -264,10 +271,27 @@ const Transaction = ({ stripePromise }) => {
             </p>
             <p style={{ fontSize: "14px", color: "#666" }}>
               <strong>Additional {totalCount - 100000} Companies:</strong> $
-              {((totalCount - 100000) * 0.05).toFixed(2)} (at $0.005 each)
+              {((totalCount - 100000) * 0.005).toFixed(2)} (at $0.005 each)
             </p>
           </>
-        ) : null}
+        ) : (
+          <p style={{ fontSize: "14px", color: "#666" }}>
+            <strong>Base Cost:</strong> ${(totalCount * 0.01).toFixed(2)} (at $0.01 each)
+          </p>
+        )}
+        {selectedAddons.length > 0 && (
+          <>
+            <p style={{ fontSize: "14px", color: "#666" }}>
+              <strong>Add-Ons ({selectedAddons.length}):</strong> $
+              {(totalCount * 0.01 * selectedAddons.length).toFixed(2)} (at $0.01 per company per add-on)
+            </p>
+            <ul style={{ listStyleType: "none", paddingLeft: "0", fontSize: "14px" }}>
+              {selectedAddons.map((addon) => (
+                <li key={addon.value}>{addon.label}</li>
+              ))}
+            </ul>
+          </>
+        )}
         <p style={{ fontSize: "14px", color: "#666" }}>
           <strong>Total Price:</strong> ${price}
         </p>

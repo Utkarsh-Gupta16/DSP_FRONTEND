@@ -1,4 +1,3 @@
-// App.jsx
 import React, { Suspense, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
@@ -7,12 +6,16 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 // Lazy Load Components
 const CountDashboard = React.lazy(() => import("../src/countdashboard/countdashboard"));
 const Login = React.lazy(() => import("../src/Auth/Login"));
+const AdminLogin = React.lazy(() => import("../src/Auth/AdminLogin"));
+const EmployeeLogin = React.lazy(() => import("../src/Auth/EmployeeLogin"));
 const Signup = React.lazy(() => import("../src/Auth/SignUp"));
+const EmployeeSignup = React.lazy(() => import("../src/Auth/EmployeeSignup"));
 const Transaction = React.lazy(() => import("../src/Transaction/transaction"));
 const AdminDashboard = React.lazy(() => import("../src/Admin/adminDashboard"));
 const Success = React.lazy(() => import("../src/Transaction/Success"));
-const Download = React.lazy(() => import("../src/Transaction/Download"));
 const ResetPassword = React.lazy(() => import("../src/Auth/ResetPassword"));
+const EmployeeDashboard = React.lazy(() => import("../src/Employee/EmployeeDashboard")); // Add this import
+const DemoPage=React.lazy(() => import("../src/countdashboard/demopage"));
 
 const AuthCallback = () => {
   const location = useLocation();
@@ -29,14 +32,27 @@ const AuthCallback = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify({ id: userId, name, email, role }));
       console.log("Google Sign-In successful:", { userId, name, email, role });
-      window.location.href = "/count";
+
+      // Redirect based on role
+      switch (role) {
+        case "admin":
+          window.location.href = "/admin";
+          break;
+        case "employee":
+          window.location.href = "/employee-dashboard"; // Update to match new route
+          break;
+        case "user":
+        default:
+          window.location.href = "/count";
+          break;
+      }
     } else {
       console.error("No token found in callback");
       window.location.href = "/login";
     }
   }, [location]);
 
-  return <div>Processing Google Sign-In...</div>;
+  return <div style={{ textAlign: "center", marginTop: "50px" }}>Processing Google Sign-In...</div>;
 };
 
 const stripePromise = loadStripe("pk_test_51R1S0AFtO5VILZ3TGjfQJUmr7YpQPqVK509QTDB5rRVgMDIJfJ6UsUMpuiSBXSEOU32yyQKIMnFf0YK5hgFS4VPa00YVeGYKJf");
@@ -47,20 +63,24 @@ const App = () => {
       <Router>
         <Suspense fallback={<div style={{ textAlign: "center", marginTop: "50px" }}>Loading...</div>}>
           <Routes>
-            {/* Home Route */}
+            {/* Home and Dashboard Routes */}
             <Route path="/" element={<CountDashboard stripePromise={stripePromise} />} />
             <Route path="/count" element={<CountDashboard stripePromise={stripePromise} />} />
+            <Route path="/employee" element={<EmployeeDashboard />} /> {/* Add this route */}
+            <Route path="/demo" element={<DemoPage />} />
 
             {/* Authentication Routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/employee-login" element={<EmployeeLogin />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/employee-signup" element={<EmployeeSignup />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Transaction Routes */}
             <Route path="/transaction" element={<Transaction stripePromise={stripePromise} />} />
             <Route path="/success" element={<Success />} />
-            <Route path="/download/:token" element={<Download />} />
 
             {/* Admin Route */}
             <Route path="/admin" element={<AdminDashboard />} />

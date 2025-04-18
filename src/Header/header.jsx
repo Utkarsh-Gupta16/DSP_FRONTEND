@@ -1,60 +1,49 @@
-// src/Header/header.jsx
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { FaSignOutAlt } from "react-icons/fa";
 
-const Header = ({ user, setUser, onLogout }) => {
+const Header = ({ user, setUser }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleLogin = () => {
-    navigate("/login", { state: { from: location.pathname } });
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    if (onLogout) onLogout(); // Call the onLogout callback if provided
     navigate("/login");
   };
 
   return (
-    <div style={{ marginBottom: "20px", textAlign: "right" }}>
-      {user ? (
-        <>
-          <span style={{ fontSize: "16px", fontWeight: "bold", color: "#28a745" }}>
-            Welcome, {user.name || "User"}
-          </span>
-          <button
-            onClick={handleLogout}
-            style={{
-              marginLeft: "10px",
-              padding: "5px 10px",
-              backgroundColor: "#ff0000",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            Logout
-          </button>
-        </>
-      ) : (
+    <div style={{ width: "250px", background: "#e6f0fa", padding: "15px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <span style={{ fontSize: "14px", color: "#333" }}>April 17, 2025</span>
+      </div>
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <img src="/assets/user-image.png" alt="User" style={{ width: "50px", height: "50px", borderRadius: "50%", marginBottom: "10px" }} />
+        <span style={{ fontWeight: "bold", color: "#333", fontSize: "16px" }}>
+          Welcome, {user?.name || user?.userName || "User"}!
+        </span>
+      </div>
+      <div style={{ textAlign: "center" }}>
         <button
-          onClick={handleLogin}
+          onClick={handleLogout}
           style={{
-            padding: "5px 10px",
-            backgroundColor: "#28a745",
+            background: "#007bff",
             color: "#fff",
             border: "none",
+            padding: "8px 15px",
             borderRadius: "4px",
             cursor: "pointer",
+            fontSize: "14px",
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "5px",
           }}
         >
-          Login
+          <FaSignOutAlt /> Logout
         </button>
-      )}
+      </div>
     </div>
   );
 };
