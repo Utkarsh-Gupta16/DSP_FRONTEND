@@ -841,7 +841,7 @@ const EmployeeDashboard = () => {
             <div>
               <p><strong>Submitted Date:</strong> {new Date(selectedHistoryRecord.submittedDate).toLocaleDateString()}</p>
               <p><strong>Status:</strong> {selectedHistoryRecord.status}</p>
-              <p><strong>Approved/Rejected Date:</strong> {selectedHistoryRecord.approvedAt ? new Date(record.approvedAt).toLocaleDateString() : "N/A"}</p>
+              <p><strong>Approved/Rejected Date:</strong> {selectedHistoryRecord.approvedAt ? new Date(selectedHistoryRecord.approvedAt).toLocaleDateString() : "N/A"}</p>
 
               <h4>General Information:</h4>
               {generalAddonOptions.map((option) => (
