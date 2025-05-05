@@ -1,0 +1,96 @@
+.admin-dashboard {
+    padding: 12px;
+    font-family: 'Inter', sans-serif;
+}
+
+.dashboard-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.dashboard-tabs {
+    display: flex;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb; /* Add a bottom border to separate tabs from content */
+}
+
+.dashboard-tab {
+    padding: 8px 16px; /* Adjust padding to match the image */
+    border-radius: 10px 10px 0 0;
+    background: #f6f6f6;
+    color: #888;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.dashboard-tab.active {
+    background: #fff;
+    color: #0b08c0;
+    border: 1px solid #e5e7eb; /* Light gray border on left, top, and right */
+    border-bottom: 2px solid #2336c6; /* Blue bottom border */
+    border-bottom-color: #2336c6; /* Ensure bottom border is blue */
+    position: relative; /* Ensure the tab sits above the container's bottom border */
+    z-index: 1; /* Ensure the active tab's bottom border overlaps the container's border */
+}
+
+.dashboard-table-container {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+
+}
+
+.dashboard-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+    padding: 14px 12px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.dashboard-table th {
+    background: #f6f6f6;
+    font-weight: 600;
+}
+
+.btn {
+    padding: 6px 12px;
+    margin-right: 6px;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 200;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn.blue {
+    background: #0080e3;
+}
+
+.btn.alice {
+    background: #01d0e2;
+}
+
+.btn.green {
+    background: #2ecc40;
+}
+
+.btn.red {
+    background: #ff4136;
+}
+
+.btn.purple {
+    background: #2336c6;
+}
+
+.btn.navy {
+    background: navy;
+}

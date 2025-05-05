@@ -24,7 +24,6 @@ const Login = () => {
         email,
         password,
       });
-      console.log("Login successful:", response.data);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       if (response.data.user.role === "user") {
@@ -37,14 +36,11 @@ const Login = () => {
         localStorage.removeItem("user");
       }
     } catch (err) {
-      console.error("Login error:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Login failed. Please try again.");
     }
   };
 
   const handleGoogleSuccess = async (response) => {
-    console.log("Google Sign-In successful in UserLogin:", response);
-    console.log("Token being sent to backend:", response.credential);
     setError("");
     setSuccess("");
     try {
@@ -53,7 +49,6 @@ const Login = () => {
         { token: response.credential },
         { withCredentials: true }
       );
-      console.log("Google login successful:", res.data);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       if (res.data.user.role === "user") {
@@ -66,13 +61,11 @@ const Login = () => {
         localStorage.removeItem("user");
       }
     } catch (err) {
-      console.error("Google login error in UserLogin:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Google login failed.");
     }
   };
 
   const handleGoogleError = () => {
-    console.error("Google login failed at client-side in UserLogin");
     setError("Google login failed at client-side.");
   };
 
@@ -109,7 +102,6 @@ const Login = () => {
       setForgotSuccess(response.data.message || "A password reset link has been sent to your email.");
       setForgotEmail("");
     } catch (err) {
-      console.error("Forgot password error:", err.response?.data || err.message);
       setForgotError(err.response?.data?.message || "Failed to send reset link. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -119,24 +111,24 @@ const Login = () => {
   return (
     <div className="flex h-screen">
       {/* Left side: Login form */}
-      <div className="w-1/2 flex flex-col justify-center px-20">
-        <div className="flex justify-between items-center mb-10">
-          
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-8 lg:px-20">
+        <div className="flex justify-between items-center mb-6">
+          {/* Optional header or logo can go here */}
         </div>
-  
-        <h1 className="text-3xl font-bold mb-2">
+
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">
           {showForgotPassword ? "Forgot Password" : "Login"}
         </h1>
-        <p className="text-gray-500 mb-6">
+        <p className="text-gray-500 mb-6 text-sm sm:text-base">
           {showForgotPassword ? "Reset your password" : "Login Your Account"}
         </p>
-  
-        {error && <p className="text-red-500">{error}</p>}
-        {success && <p className="text-green-500">{success}</p>}
-  
+
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {success && <p className="text-green-500 text-sm mb-4">{success}</p>}
+
         {!showForgotPassword ? (
-          <form onSubmit={handleSubmit}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
               E - Mail Address
             </label>
             <input
@@ -145,10 +137,10 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="Enter Email"
-              className="w-full mb-4 p-3 bg-gray-100 rounded-md"
+              className="w-full p-3 bg-gray-100 rounded-md text-sm"
             />
-  
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+            <label className="block text-sm font-medium text-gray-700">
               Password
             </label>
             <input
@@ -157,19 +149,19 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="@Enter Password"
-              className="w-full mb-6 p-3 bg-gray-100 rounded-md"
+              className="w-full p-3 bg-gray-100 rounded-md text-sm"
             />
-  
+
             <button
               type="submit"
-              className="w-full bg-indigo-900 text-white py-3 rounded-md font-medium hover:bg-indigo-800"
+              className="w-full bg-indigo-900 text-white py-3 rounded-md font-medium hover:bg-indigo-800 text-sm"
             >
               Login
             </button>
           </form>
         ) : (
-          <form onSubmit={handleForgotPasswordSubmit}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
               Enter your email to reset your password:
             </label>
             <input
@@ -179,13 +171,13 @@ const Login = () => {
               required
               disabled={isSubmitting}
               placeholder="Enter Email"
-              className="w-full mb-4 p-3 bg-gray-100 rounded-md"
+              className="w-full p-3 bg-gray-100 rounded-md text-sm"
             />
-  
+
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-3 rounded-md font-medium ${
+              className={`w-full py-3 rounded-md font-medium text-sm ${
                 isSubmitting
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-indigo-900 hover:bg-indigo-800 text-white"
@@ -195,7 +187,7 @@ const Login = () => {
             </button>
           </form>
         )}
-  
+
         <div className="mt-4 text-sm">
           {!showForgotPassword ? (
             <a
@@ -226,7 +218,7 @@ const Login = () => {
             </a>
           )}
         </div>
-  
+
         {!showForgotPassword && (
           <>
             <div className="mt-6">
@@ -242,9 +234,9 @@ const Login = () => {
           </>
         )}
       </div>
-  
+
       {/* Right side: Illustration */}
-      <div className="w-1/2 bg-indigo-900 flex items-center justify-center relative">
+      <div className="hidden lg:flex w-1/2 bg-indigo-900 items-center justify-center relative">
         <img
           src="/assets/illustration.svg"
           alt="illustration"
@@ -258,7 +250,6 @@ const Login = () => {
       </div>
     </div>
   );
-  
 };
 
 export default Login;

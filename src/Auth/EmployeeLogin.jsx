@@ -229,10 +229,7 @@ const EmployeeLogin = () => {
   
         {!showForgotPassword && (
           <>
-            <div className="mt-6">
-              <p className="text-sm">Or login with:</p>
-              <div id="googleSignInButton" className="mt-2" />
-            </div>
+            
             <p className="mt-4 text-sm">
               Don’t have an account?{" "}
               <a href="/signup" className="text-indigo-600 hover:underline">

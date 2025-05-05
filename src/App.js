@@ -12,9 +12,11 @@ const Signup = React.lazy(() => import("../src/Auth/SignUp"));
 const EmployeeSignup = React.lazy(() => import("../src/Auth/EmployeeSignup"));
 const Transaction = React.lazy(() => import("../src/Transaction/transaction"));
 const AdminDashboard = React.lazy(() => import("../src/Admin/adminDashboard"));
+const CompanyDetailsPage = React.lazy(() => import("../src/Admin/CompanyDetailsPage"));
 const Success = React.lazy(() => import("../src/Transaction/Success"));
 const ResetPassword = React.lazy(() => import("../src/Auth/ResetPassword"));
 const EmployeeDashboard = React.lazy(() => import("../src/Employee/EmployeeDashboard")); // Add this import
+const CompanyDetailsForm = React.lazy(() => import("../src/Employee/CompanyDetailsForm"));
 const DemoPage=React.lazy(() => import("../src/countdashboard/demopage"));
 
 const AuthCallback = () => {
@@ -67,6 +69,8 @@ const App = () => {
             <Route path="/" element={<CountDashboard stripePromise={stripePromise} />} />
             <Route path="/count" element={<CountDashboard stripePromise={stripePromise} />} />
             <Route path="/employee" element={<EmployeeDashboard />} /> {/* Add this route */}
+            <Route path="/fill-details/:taskId" element={<CompanyDetailsForm />} />
+            <Route path="/company-details/:id" element={<CompanyDetailsPage />} />
             <Route path="/demo" element={<DemoPage />} />
 
             {/* Authentication Routes */}

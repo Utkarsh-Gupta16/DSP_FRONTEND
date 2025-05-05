@@ -94,9 +94,9 @@ const Transaction = ({ stripePromise }) => {
   // Dynamic pricing logic including add-ons
   const calculatePrice = (count, addons) => {
     const threshold = 100000;
-    const rateFirstTier = 0.01; // Base rate per company
-    const rateSecondTier = 0.005; // Reduced rate for companies above threshold
-    const addonRate = 0.01; // $0.01 per company per add-on
+    const rateFirstTier = 0.5; // Base rate per company
+    const rateSecondTier = 0.25; // Reduced rate for companies above threshold
+    const addonRate = 0.1; // $0.1 per company per add-on
 
     let basePrice;
     if (count <= threshold) {
@@ -108,7 +108,7 @@ const Transaction = ({ stripePromise }) => {
       basePrice = firstTierCost + secondTierCost;
     }
 
-    const addonCost = count * addonRate * addons.length; // Add-on cost: $0.01 per company per add-on
+    const addonCost = count * addonRate * addons.length; // Add-on cost: $0.5 per company per add-on
     return (basePrice + addonCost).toFixed(2);
   };
 
@@ -197,7 +197,7 @@ const handlePaymentSuccess = async (paymentIntent) => {
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif", maxWidth: "600px", margin: "0 auto" }}>
+<div style={{ padding: "20px", fontFamily: "Arial, sans-serif", maxWidth: "600px", margin: "0 auto" }}>
       {/* Header */}
       <div
         style={{
@@ -267,23 +267,23 @@ const handlePaymentSuccess = async (paymentIntent) => {
         {totalCount > 100000 ? (
           <>
             <p style={{ fontSize: "14px", color: "#666" }}>
-              <strong>First 100,000 Companies:</strong> $10,000.00 (at $0.01 each)
+              <strong>First 100,000 Companies:</strong> $50,000.00 (at $0.5 each)
             </p>
             <p style={{ fontSize: "14px", color: "#666" }}>
               <strong>Additional {totalCount - 100000} Companies:</strong> $
-              {((totalCount - 100000) * 0.005).toFixed(2)} (at $0.005 each)
+              {((totalCount - 100000) * 0.25).toFixed(2)} (at $0.25 each)
             </p>
           </>
         ) : (
           <p style={{ fontSize: "14px", color: "#666" }}>
-            <strong>Base Cost:</strong> ${(totalCount * 0.01).toFixed(2)} (at $0.01 each)
+            <strong>Base Cost:</strong> ${(totalCount * 0.5).toFixed(2)} (at $0.5 each)
           </p>
         )}
         {selectedAddons.length > 0 && (
           <>
             <p style={{ fontSize: "14px", color: "#666" }}>
               <strong>Add-Ons ({selectedAddons.length}):</strong> $
-              {(totalCount * 0.01 * selectedAddons.length).toFixed(2)} (at $0.01 per company per add-on)
+              {(totalCount * 0.1 * selectedAddons.length).toFixed(2)} (at $0.1 per company per add-on)
             </p>
             <ul style={{ listStyleType: "none", paddingLeft: "0", fontSize: "14px" }}>
               {selectedAddons.map((addon) => (
@@ -328,6 +328,11 @@ const handlePaymentSuccess = async (paymentIntent) => {
             {filters.country && <li>Country: {filters.country.label}</li>}
             {filters.state && <li>State: {filters.state.label}</li>}
             {filters.city && <li>City: {filters.city.label}</li>}
+            {selectedAddons.length > 0 && (
+              <li>
+                Add-Ons: {selectedAddons.map((addon) => formatString(addon.label)).join(", ")}
+              </li>
+            )}
           </ul>
         </div>
       </div>

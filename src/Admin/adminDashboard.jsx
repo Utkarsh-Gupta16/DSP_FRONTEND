@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DemoRequestsTab from "./DemoRequestsTab";
+import { FaHome, FaChartBar, FaTasks, FaPrint, FaBell, FaCog, FaSortDown, FaSignOutAlt } from "react-icons/fa";
+import "./adminDashboard.css";
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -14,7 +16,6 @@ const AdminDashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [distributionAlert, setDistributionAlert] = useState(null);
-  const [selectedApproval, setSelectedApproval] = useState(null);
   const navigate = useNavigate();
 
   const generalAddonOptions = [
@@ -25,6 +26,9 @@ const AdminDashboard = () => {
     { value: "foundationYear", label: "Foundation Year" },
     { value: "presentInCountries", label: "Present in Countries" },
     { value: "locationOfEachCountryOffice", label: "Location of Each Country's Office" },
+    { value: "contactNumber", label: "Contact Number" },
+    { value: "subsidiaries", label: "Subsidiaries" },
+    { value: "employeeGrowth", label: "Employee Growth" },
   ];
 
   const decisionMakerOptions = [
@@ -133,7 +137,7 @@ const AdminDashboard = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setError("No authentication token found. Please log in again.");
-      navigate("/login");
+      navigate("/admin-login");
       return;
     }
     if (storedUser) {
@@ -145,7 +149,7 @@ const AdminDashboard = () => {
         fetchData(token);
       }
     } else {
-      navigate("/login");
+      navigate("/admin-login");
     }
   }, [navigate]);
 
@@ -164,9 +168,8 @@ const AdminDashboard = () => {
         axios.get("https://dsp-backend.onrender.com/api/users/employee", { headers: { Authorization: `Bearer ${token}` } }),
         axios.get("https://dsp-backend.onrender.com/api/company-details/pending-approvals", { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-  
+
       setOrders(ordersResponse.data || []);
-  
       const newAssignedCompaniesPerOrder = assignedCompaniesResponse.data.reduce((acc, assignment) => {
         acc[assignment._id] = assignment.totalCompaniesAssigned || 0;
         return acc;
@@ -179,7 +182,7 @@ const AdminDashboard = () => {
           approvedCompanies: order.approvedCompanies || 0,
         }))
       );
-  
+
       setAssignedCompanies(assignedCompaniesResponse.data || []);
       const tasksByEmployee = tasksResponse.data.reduce((acc, task) => {
         if (!acc[task.employeeId]) acc[task.employeeId] = [];
@@ -199,7 +202,7 @@ const AdminDashboard = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    navigate("/login");
+    navigate("/admin-login");
   };
 
   const distributeCompanies = async (orderId, totalCompanies) => {
@@ -434,579 +437,633 @@ const AdminDashboard = () => {
     }
   };
 
-  const updateApprovalStatus = async (companyDetailId, status) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("No authentication token found. Please log in again.");
-        navigate("/login");
-        return;
-      }
-      const response = await axios.put(
-        `https://dsp-backend.onrender.com/api/company-details/approve-company-details/${companyDetailId}`,
-        { status, returnToEmployee: status === "rejected" },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert(`Approval status updated to ${status} successfully!`);
-      fetchData(token);
-      setSelectedApproval(null);
-    } catch (err) {
-      console.error("Update approval status error:", err.response?.data || err.message);
-      setError(`Failed to update approval status: ${err.response?.data?.message || err.message}`);
-    }
-  };
-
-  if (error) return <div style={{ padding: "20px", color: "red" }}>{error}</div>;
+  if (error) {
+    return (
+      <div style={{ padding: "20px", color: "#EF4444", textAlign: "center", fontSize: "16px", fontFamily: "'Poppins', sans-serif" }}>
+        {error}
+      </div>
+    );
+  }
 
   const pendingOrders = orders.filter((order) => order.status === "pending_delivery");
   const completedOrders = orders.filter((order) => order.status === "completed");
   const failedOrders = orders.filter((order) => order.status === "failed");
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      {user && (
-        <div style={{ marginBottom: "20px", textAlign: "right" }}>
-          <span style={{ fontSize: "16px", fontWeight: "bold", color: "#28a745" }}>
-            Welcome, Admin {user.name || "User"}
-          </span>
-          <button
-            onClick={handleLogout}
-            style={{
-              marginLeft: "10px",
-              padding: "5px 10px",
-              backgroundColor: "#ff0000",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            Logout
-          </button>
+    <div className="admin-dashboard" style={{ display: "flex", minHeight: "100vh", fontFamily: "'Poppins', sans-serif" }}>
+      {/* Sidebar */}
+      <div
+        style={{
+          width: "80px",
+          backgroundColor: "#F9FAFB",
+          padding: "20px 0",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          borderRight: "1px solid #E5E7EB",
+        }}
+      >
+        <div style={{ marginBottom: "40px" }}>
+          <FaHome style={{ fontSize: "24px", color: "#3B82F6" }} />
         </div>
-      )}
-
-      <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "20px" }}>Admin Dashboard</h2>
-
-      <div style={{ marginBottom: "20px" }}>
-        <button
-          onClick={() => setActiveTab("pending")}
-          style={{
-            padding: "10px 20px",
-            marginRight: "10px",
-            backgroundColor: activeTab === "pending" ? "#28a745" : "#e0e0e0",
-            color: activeTab === "pending" ? "#fff" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Pending Orders
-        </button>
-        <button
-          onClick={() => setActiveTab("completed")}
-          style={{
-            padding: "10px 20px",
-            marginRight: "10px",
-            backgroundColor: activeTab === "completed" ? "#28a745" : "#e0e0e0",
-            color: activeTab === "completed" ? "#fff" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Completed Orders
-        </button>
-        <button
-          onClick={() => setActiveTab("failed")}
-          style={{
-            padding: "10px 20px",
-            marginRight: "10px",
-            backgroundColor: activeTab === "failed" ? "#28a745" : "#e0e0e0",
-            color: activeTab === "failed" ? "#fff" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Failed Orders
-        </button>
-        <button
-          onClick={() => setActiveTab("assigned")}
-          style={{
-            padding: "10px 20px",
-            marginRight: "10px",
-            backgroundColor: activeTab === "assigned" ? "#28a745" : "#e0e0e0",
-            color: activeTab === "assigned" ? "#fff" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Assigned Companies
-        </button>
-        <button
-          onClick={() => setActiveTab("approvals")}
-          style={{
-            padding: "10px 20px",
-            marginRight: "10px",
-            backgroundColor: activeTab === "approvals" ? "#28a745" : "#e0e0e0",
-            color: activeTab === "approvals" ? "#fff" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Request for Approval
-        </button>
-        <button
-          onClick={() => setActiveTab("demo-requests")}
-          style={{
-            padding: "10px 20px",
-            marginRight: "10px",
-            backgroundColor: activeTab === "demo-requests" ? "#28a745" : "#e0e0e0",
-            color: activeTab === "demo-requests" ? "#fff" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Demo Requests
-        </button>
+        <div style={{ marginBottom: "20px" }}>
+          <FaChartBar style={{ fontSize: "24px", color: "#6B7280" }} />
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <FaTasks style={{ fontSize: "24px", color: "#6B7280" }} />
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <FaPrint style={{ fontSize: "24px", color: "#6B7280" }} />
+        </div>
       </div>
 
-      {distributionAlert && (
-        <div style={{ color: "green", marginBottom: "10px" }}>{distributionAlert}</div>
-      )}
+      {/* Main Content */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", backgroundColor: "#F9FAFB" }}>
+        {/* Top Navigation Bar */}
+        <div
+          style={{
+            backgroundColor: "#FFFFFF",
+            padding: "12px 24px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "1px solid #E5E7EB",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ marginRight: "24px", fontSize: "20px", fontWeight: "600", color: "#1F2937" }}>
+              COMPANY LOGO
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            {user && (
+              <span style={{ fontSize: "14px", color: "#1F2937" }}>
+                Welcome, Admin {user.name || "User"}!
+              </span>
+            )}
+            <img src="assets/user-image.png" alt="" style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "#D1D5DB" }} />
+            <FaSignOutAlt style={{ fontSize: "20px", color: "#6B7280", cursor: "pointer" }} onClick={handleLogout} />
+          </div>
+        </div>
 
-      {activeTab === "pending" && (
-        <div style={{ overflowX: "auto" }}>
-          <h3>Pending Orders</h3>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-            <thead>
-              <tr>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Order ID</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Total Companies</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Assigned Companies</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Remaining Companies</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Approved Companies</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Actions</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Send Email</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingOrders.map((order) => (
-                <tr key={order._id}>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order._id}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order.totalCount}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order.assignedCompanies || 0}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order.remainingCompanies || order.totalCount}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{getApprovedCompanies(order._id)}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                    <button
-                      onClick={() => distributeCompanies(order._id, order.remainingCompanies)}
-                      style={{
-                        padding: "5px 10px",
-                        backgroundColor: "#007bff",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        marginRight: "5px",
-                      }}
-                    >
-                      Distribute
-                    </button>
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      style={{
-                        padding: "5px 10px",
-                        backgroundColor: "#17a2b8",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        marginRight: "5px",
-                      }}
-                    >
-                      Assign Task
-                    </button>
-                    <button
-                      onClick={() => updateOrderStatus(order._id, "completed")}
-                      style={{
-                        padding: "5px 10px",
-                        backgroundColor: "#28a745",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        marginRight: "5px",
-                      }}
-                    >
-                      Mark Completed
-                    </button>
-                    <button
-                      onClick={() => updateOrderStatus(order._id, "failed")}
-                      style={{
-                        padding: "5px 10px",
-                        backgroundColor: "#dc3545",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Mark Failed
-                    </button>
-                  </td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                    <button
-                      onClick={() => sendEmailWithCSV(order)}
-                      style={{
-                        padding: "5px 10px",
-                        backgroundColor: "#28a745",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        marginRight: "5px",
-                      }}
-                    >
-                      Send Email
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Main Content Area */}
+        <div style={{ padding: "24px", flex: 1 }}>
+          <h2 className="dashboard-title">Admin Dashboard</h2>
 
-          {selectedOrder && (
-            <div style={{ marginTop: "20px", border: "1px solid #e0e0e0", padding: "15px", borderRadius: "4px" }}>
-              <h4>Assign Task for Order {selectedOrder._id}</h4>
-              <form onSubmit={assignTaskToEmployee}>
-                <div style={{ marginBottom: "10px" }}>
-                  <label htmlFor="employeeId">Select Employee:</label>
-                  <select
-                    id="employeeId"
-                    name="employeeId"
-                    required
-                    style={{ marginLeft: "10px", padding: "5px" }}
-                  >
-                    <option value="">Select an employee</option>
-                    {employees.map((emp) => (
-                      <option key={emp._id} value={emp._id}>
-                        {emp.name} ({emp.email})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div style={{ marginBottom: "10px" }}>
-                  <label htmlFor="companyCount">Number of Companies (1-100):</label>
-                  <input
-                    type="number"
-                    id="companyCount"
-                    name="companyCount"
-                    min="1"
-                    max="100"
-                    required
-                    style={{ marginLeft: "10px", padding: "5px" }}
-                  />
-                </div>
-                <div>
-                  <button
-                    type="submit"
-                    style={{
-                      padding: "5px 10px",
-                      backgroundColor: "#28a745",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      marginRight: "10px",
-                    }}
-                  >
-                    Assign Task
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedOrder(null)}
-                    style={{
-                      padding: "5px 10px",
-                      backgroundColor: "#6c757d",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+          {/* Tabs */}
+          <div className="dashboard-tabs">
+            {[
+              { key: "pending", label: "Pending Orders" },
+              { key: "completed", label: "Complete Orders" },
+              { key: "failed", label: "Failed Orders" },
+              { key: "assigned", label: "Assigned Companies" },
+              { key: "approvals", label: "Request for Approval" },
+              { key: "demo-requests", label: "Demo Approval" },
+            ].map((tab) => (
+              <div
+                key={tab.key}
+                className={`dashboard-tab${activeTab === tab.key ? " active" : ""}`}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </div>
+            ))}
+          </div>
+
+          {/* Distribution Alert */}
+          {distributionAlert && (
+            <div
+              style={{
+                backgroundColor: "#ECFDF5",
+                color: "#059669",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                marginBottom: "16px",
+                fontSize: "14px",
+              }}
+            >
+              {distributionAlert}
             </div>
           )}
-        </div>
-      )}
 
-      {activeTab === "completed" && (
-        <div style={{ overflowX: "auto" }}>
-          <h3>Completed Orders</h3>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-            <thead>
-              <tr>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Order ID</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Total Companies</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Assigned Companies</th>
-              </tr>
-            </thead>
-            <tbody>
-              {completedOrders.map((order) => (
-                <tr key={order._id}>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order._id}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order.totalCount}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order.assignedCompanies || 0}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeTab === "failed" && (
-        <div style={{ overflowX: "auto" }}>
-          <h3>Failed Orders</h3>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-            <thead>
-              <tr>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Order ID</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Total Companies</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Assigned Companies</th>
-              </tr>
-            </thead>
-            <tbody>
-              {failedOrders.map((order) => (
-                <tr key={order._id}>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order._id}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order.totalCount}</td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{order.assignedCompanies || 0}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeTab === "assigned" && (
-        <div style={{ overflowX: "auto" }}>
-          <h3>Assigned Companies</h3>
-          <button
-            onClick={clearAllTasks}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#dc3545",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              marginBottom: "10px",
-            }}
-          >
-            Clear All Tasks
-          </button>
-          {Object.keys(individualTasks).map((employeeId) => {
-            const employeeTasks = individualTasks[employeeId];
-            const employee = employees.find((emp) => emp._id === employeeId);
-            return (
-              <div key={employeeId} style={{ marginBottom: "20px" }}>
-                <h4>
-                  {employee ? `${employee.name} (${employee.email})` : `Employee ID: ${employeeId}`}
-                  <button
-                    onClick={() => deleteEmployeeTasks(employeeId)}
-                    style={{
-                      marginLeft: "10px",
-                      padding: "5px 10px",
-                      backgroundColor: "#dc3545",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Delete All Tasks
-                  </button>
-                </h4>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-                  <thead>
-                    <tr>
-                      <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Task ID</th>
-                      <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Order ID</th>
-                      <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Company Count</th>
-                      <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Range</th>
-                      <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Assigned Date</th>
-                      <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Submit Till Date</th>
-                      <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Status</th>
-                      <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employeeTasks.map((task) => (
-                      <tr key={task._id}>
-                        <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{task._id}</td>
-                        <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{task.orderId}</td>
-                        <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{task.companyCount}</td>
-                        <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                          {task.startIndex + 1} to {task.endIndex + 1}
-                        </td>
-                        <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                          {new Date(task.assignedDate).toLocaleDateString()}
-                        </td>
-                        <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                          {task.submitTillDate ? new Date(task.submitTillDate).toLocaleDateString() : "N/A"}
-                        </td>
-                        <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>{task.status}</td>
-                        <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                          <button
-                            onClick={() => deleteSpecificTask(task._id)}
-                            style={{
-                              padding: "5px 10px",
-                              backgroundColor: "#dc3545",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            Delete
+          {/* Pending Orders */}
+          {activeTab === "pending" && (
+            <div className="dashboard-table-container">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>
+                      Order ID <span className="sort-arrow">↓</span>
+                    </th>
+                    <th>Total Companies</th>
+                    <th>Assigned Companies</th>
+                    <th>Remaining Companies</th>
+                    <th>Approved Companies</th>
+                    <th>Action</th>
+                    <th>Send Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingOrders.map((order) => (
+                    <tr key={order._id}>
+                      <td>{order._id}</td>
+                      <td>{order.totalCount}</td>
+                      <td>{order.assignedCompanies || 0}</td>
+                      <td>{order.remainingCompanies || order.totalCount}</td>
+                      <td>{getApprovedCompanies(order._id)}</td>
+                      <td>
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                          <button className="btn alice" onClick={() => distributeCompanies(order._id, order.remainingCompanies)}>
+                            Distribute
                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                          <button className="btn blue" onClick={() => setSelectedOrder(order)}>
+                            Assigned Task
+                          </button>
+                          <button className="btn green" onClick={() => updateOrderStatus(order._id, "completed")}>
+                            Mark Complete
+                          </button>
+                          <button className="btn red" onClick={() => updateOrderStatus(order._id, "failed")}>
+                            Mark Failed
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <button className="btn navy" onClick={() => sendEmailWithCSV(order)}>
+                          Send Email
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-      {activeTab === "approvals" && (
-        <div style={{ overflowX: "auto" }}>
-          <h3>Pending Approvals</h3>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-            <thead>
-              <tr>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Company Name</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Employee</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Submitted Date</th>
-                <th style={{ border: "1px solid #e0e0e0", padding: "8px" }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingApprovals.map((approval) => (
-                <tr key={approval._id}>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                    {approval.companyId.businessName || `Unknown (ID: ${approval.companyId._id})`}
-                  </td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                    {approval.employeeId.name} ({approval.employeeId.email})
-                  </td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                    {new Date(approval.submittedDate).toLocaleDateString()}
-                  </td>
-                  <td style={{ border: "1px solid #e0e0e0", padding: "8px" }}>
-                    <button
-                      onClick={() => setSelectedApproval(approval)}
-                      style={{
-                        padding: "5px 10px",
-                        backgroundColor: "#007bff",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        marginRight: "5px",
-                      }}
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {selectedApproval && (
-            <div style={{ marginTop: "20px", border: "1px solid #e0e0e0", padding: "15px", borderRadius: "4px" }}>
-              <h4>Details for {selectedApproval.companyId.businessName || `Unknown (ID: ${selectedApproval.companyId._id})`}</h4>
-              <p>
-                <strong>Employee:</strong> {selectedApproval.employeeId.name} ({selectedApproval.employeeId.email})
-              </p>
-              <p>
-                <strong>Submitted Date:</strong> {new Date(selectedApproval.submittedDate).toLocaleDateString()}
-              </p>
-              <h5>General Information:</h5>
-              {generalAddonOptions.map((option) => (
-                <p key={option.value}>
-                  <strong>{option.label}:</strong>{" "}
-                  {Array.isArray(selectedApproval.formData?.[option.value])
-                    ? selectedApproval.formData[option.value].join(", ")
-                    : selectedApproval.formData?.[option.value] || "N/A"}
-                </p>
-              ))}
-              <h5>Decision Makers:</h5>
-              {decisionMakerOptions.map((option) => (
-                <p key={option.value}>
-                  <strong>{option.label}:</strong> {selectedApproval.formData?.[option.value] || "N/A"}
-                </p>
-              ))}
-              <div style={{ marginTop: "15px" }}>
-                <button
-                  onClick={() => updateApprovalStatus(selectedApproval._id, "approved")}
+              {/* Task Assignment Form */}
+              {selectedOrder && (
+                <div
                   style={{
-                    padding: "5px 10px",
-                    backgroundColor: "#28a745",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    marginRight: "10px",
+                    marginTop: "24px",
+                    padding: "16px",
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                    maxWidth: "400px",
+                    margin: "24px auto",
                   }}
                 >
-                  Approve
-                </button>
-                <button
-                  onClick={() => updateApprovalStatus(selectedApproval._id, "rejected")}
-                  style={{
-                    padding: "5px 10px",
-                    backgroundColor: "#dc3545",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    marginRight: "10px",
-                  }}
-                >
-                  Reject
-                </button>
-                <button
-                  onClick={() => setSelectedApproval(null)}
-                  style={{
-                    padding: "5px 10px",
-                    backgroundColor: "#6c757d",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Close
-                </button>
-              </div>
+                  <h4
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      color: "#1F2937",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    Assign Task for Order {selectedOrder._id}
+                  </h4>
+                  <form onSubmit={assignTaskToEmployee}>
+                    <div style={{ marginBottom: "16px" }}>
+                      <label
+                        htmlFor="employeeId"
+                        style={{ display: "block", fontSize: "14px", color: "#1F2937", marginBottom: "8px" }}
+                      >
+                        Select Employee
+                      </label>
+                      <select
+                        id="employeeId"
+                        name="employeeId"
+                        required
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                          color: "#1F2937",
+                        }}
+                      >
+                        <option value="">Select an employee</option>
+                        {employees.map((emp) => (
+                          <option key={emp._id} value={emp._id}>
+                            {emp.name} ({emp.email})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div style={{ marginBottom: "16px" }}>
+                      <label
+                        htmlFor="companyCount"
+                        style={{ display: "block", fontSize: "14px", color: "#1F2937", marginBottom: "8px" }}
+                      >
+                        Number of Companies (1-100)
+                      </label>
+                      <input
+                        type="number"
+                        id="companyCount"
+                        name="companyCount"
+                        min="1"
+                        max="100"
+                        required
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                          color: "#1F2937",
+                        }}
+                      />
+                    </div>
+                    <div style={{ display: "flex", gap: "12px" }}>
+                      <button
+                        type="submit"
+                        className="btn green"
+                        style={{ flex: 1 }}
+                      >
+                        Assign Task
+                      </button>
+                      <button
+                        type="button"
+                        className="btn"
+                        style={{ flex: 1, backgroundColor: "#6B7280" }}
+                        onClick={() => setSelectedOrder(null)}
+                        onMouseOver={(e) => (e.target.style.backgroundColor = "#4B5563")}
+                        onMouseOut={(e) => (e.target.style.backgroundColor = "#6B7280")}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      {activeTab === "demo-requests" && <DemoRequestsTab />}
+          {/* Completed Orders */}
+          {activeTab === "completed" && (
+            <div className="dashboard-table-container">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>
+                      Order ID <span className="sort-arrow">↓</span>
+                    </th>
+                    <th>Total Companies</th>
+                    <th>Assigned Companies</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {completedOrders.map((order) => (
+                    <tr key={order._id}>
+                      <td>{order._id}</td>
+                      <td>{order.totalCount}</td>
+                      <td>{order.assignedCompanies || 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Failed Orders */}
+          {activeTab === "failed" && (
+            <div className="dashboard-table-container">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>
+                      Order ID <span className="sort-arrow">↓</span>
+                    </th>
+                    <th>Total Companies</th>
+                    <th>Assigned Companies</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {failedOrders.map((order) => (
+                    <tr key={order._id}>
+                      <td>{order._id}</td>
+                      <td>{order.totalCount}</td>
+                      <td>{order.assignedCompanies || 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Assigned Companies */}
+          {activeTab === "assigned" && (
+            <div className="dashboard-table-container">
+              <div style={{ padding: "16px" }}>
+                <button className="btn red" onClick={clearAllTasks}>
+                  Clear All Tasks
+                </button>
+              </div>
+              {Object.keys(individualTasks).map((employeeId) => {
+                const employeeTasks = individualTasks[employeeId];
+                const employee = employees.find((emp) => emp._id === employeeId);
+                return (
+                  <div key={employeeId} style={{ marginBottom: "24px", padding: "0 16px" }}>
+                    <h4
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#1F2937",
+                        marginBottom: "16px",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {employee
+                        ? `${employee.name} (${employee.email})`
+                        : `Employee ID: ${employeeId}`}
+                      <button
+                        className="btn red"
+                        style={{ marginLeft: "12px" }}
+                        onClick={() => deleteEmployeeTasks(employeeId)}
+                      >
+                        Delete All Tasks
+                      </button>
+                    </h4>
+                    <table className="dashboard-table">
+                      <thead>
+                        <tr>
+                          {[
+                            "Task ID",
+                            "Order ID",
+                            "Company Count",
+                            "Range",
+                            "Assigned Date",
+                            "Submit Till Date",
+                            "Status",
+                            "Action",
+                          ].map((header) => (
+                            <th key={header}>{header}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {employeeTasks.map((task) => (
+                          <tr key={task._id}>
+                            <td>{task._id}</td>
+                            <td>{task.orderId}</td>
+                            <td>{task.companyCount}</td>
+                            <td>{task.startIndex + 1} to {task.endIndex + 1}</td>
+                            <td>{new Date(task.assignedDate).toLocaleDateString()}</td>
+                            <td>
+                              {task.submitTillDate
+                                ? new Date(task.submitTillDate).toLocaleDateString()
+                                : "N/A"}
+                            </td>
+                            <td>{task.status}</td>
+                            <td>
+                              <button
+                                className="btn red"
+                                style={{ width: "80px" }}
+                                onClick={() => deleteSpecificTask(task._id)}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Pending Approvals */}
+          {activeTab === "approvals" && (
+            <div className="dashboard-table-container">
+              <table className="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>Company Name</th>
+                    <th>Employee</th>
+                    <th>Submitted Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingApprovals.map((approval) => (
+                    <tr key={approval._id}>
+                      <td>{approval.companyId.businessName || `Unknown (ID: ${approval.companyId._id})`}</td>
+                      <td>{approval.employeeId.name} ({approval.employeeId.email})</td>
+                      <td>{new Date(approval.submittedDate).toLocaleDateString()}</td>
+                      <td>
+                        <button
+                          className="btn blue"
+                          style={{ width: "100px" }}
+                          onClick={() => navigate(`/company-details/${approval._id}`)}
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Demo Requests */}
+          {activeTab === "demo-requests" && <DemoRequestsTab />}
+        </div>
+      </div>
+      <style>
+        {`
+          @media (max-width: 768px) {
+            .admin-dashboard {
+              flex-direction: column;
+            }
+
+            /* Sidebar adjustments */
+            .admin-dashboard > div:first-child {
+              width: 100%;
+              flex-direction: row;
+              justify-content: space-around;
+              padding: 10px;
+              position: fixed;
+              bottom: 0;
+              left: 0;
+              z-index: 1000;
+              border-right: none;
+              border-top: 1px solid #E5E7EB;
+              background-color: #F9FAFB;
+            }
+
+            .admin-dashboard > div:first-child > div {
+              margin: 0;
+            }
+
+            .admin-dashboard > div:first-child > div svg {
+              font-size: 20px;
+            }
+
+            /* Top navigation bar */
+            .admin-dashboard > div:nth-child(2) > div:first-child {
+              padding: 10px 15px;
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 10px;
+            }
+
+            .admin-dashboard > div:nth-child(2) > div:first-child > div:first-child {
+              margin-right: 0;
+              font-size: 16px;
+            }
+
+            .admin-dashboard > div:nth-child(2) > div:first-child > div:last-child {
+              flex-direction: row;
+              gap: 10px;
+              width: 100%;
+              justify-content: flex-end;
+            }
+
+            .admin-dashboard > div:nth-child(2) > div:first-child > div:last-child span {
+              font-size: 12px;
+            }
+
+            .admin-dashboard > div:nth-child(2) > div:first-child > div:last-child img {
+              width: 24px;
+              height: 24px;
+            }
+
+            .admin-dashboard > div:nth-child(2) > div:first-child > div:last-child svg {
+              font-size: 16px;
+            }
+
+            /* Main content area */
+            .admin-dashboard > div:nth-child(2) > div:last-child {
+              padding: 15px;
+              padding-bottom: 80px; /* Account for fixed sidebar */
+            }
+
+            .dashboard-title {
+              font-size: 20px !important;
+            }
+
+            /* Tabs */
+            .dashboard-tabs {
+              flex-wrap: wrap;
+              gap: 8px;
+            }
+
+            .dashboard-tab {
+              padding: 8px 12px !important;
+              font-size: 12px !important;
+            }
+
+            /* Distribution alert */
+            .admin-dashboard > div:nth-child(2) > div:last-child > div[style*="backgroundColor: #ECFDF5"] {
+              font-size: 12px;
+              padding: 10px;
+            }
+
+            /* Tables */
+            .dashboard-table-container {
+              overflow-x: auto;
+            }
+
+            .dashboard-table {
+              display: block;
+              width: 100%;
+              overflow-x: auto;
+              white-space: nowrap;
+            }
+
+            .dashboard-table thead,
+            .dashboard-table tbody,
+            .dashboard-table tr {
+              display: table;
+              width: 100%;
+              table-layout: fixed;
+            }
+
+            .dashboard-table th,
+            .dashboard-table td {
+              padding: 8px;
+              font-size: 12px;
+              min-width: 100px;
+            }
+
+            .dashboard-table th:first-child,
+            .dashboard-table td:first-child {
+              min-width: 80px;
+            }
+
+            /* Buttons in tables */
+            .dashboard-table td div[style*="display: flex"] {
+              flex-direction: column;
+              gap: 5px;
+            }
+
+            .dashboard-table button {
+              padding: 6px 10px !important;
+              font-size: 11px !important;
+              width: 100%;
+            }
+
+            /* Task assignment form */
+            .dashboard-table-container > div[style*="maxWidth: 400px"] {
+              max-width: 100%;
+              padding: 12px;
+              margin: 15px 0;
+            }
+
+            .dashboard-table-container > div[style*="maxWidth: 400px"] h4 {
+              font-size: 14px;
+            }
+
+            .dashboard-table-container > div[style*="maxWidth: 400px"] label {
+              font-size: 12px;
+            }
+
+            .dashboard-table-container > div[style*="maxWidth: 400px"] select,
+            .dashboard-table-container > div[style*="maxWidth: 400px"] input {
+              padding: 6px;
+              font-size: 12px;
+            }
+
+            .dashboard-table-container > div[style*="maxWidth: 400px"] div[style*="display: flex"] {
+              flex-direction: column;
+              gap: 8px;
+            }
+
+            .dashboard-table-container > div[style*="maxWidth: 400px"] button {
+              padding: 8px;
+              font-size: 12px;
+            }
+
+            /* Assigned companies section */
+            .dashboard-table-container > div[style*="padding: 16px"] {
+              padding: 10px;
+            }
+
+            .dashboard-table-container > div[style*="marginBottom: 24px"] {
+              margin-bottom: 15px;
+              padding: 0 10px;
+            }
+
+            .dashboard-table-container > div[style*="marginBottom: 24px"] h4 {
+              font-size: 14px;
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 8px;
+            }
+
+            .dashboard-table-container > div[style*="marginBottom: 24px"] button {
+              margin-left: 0;
+              width: 100%;
+              padding: 6px;
+              font-size: 11px;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };

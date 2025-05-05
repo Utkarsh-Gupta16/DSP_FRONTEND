@@ -1,6 +1,7 @@
-// Addon-Filters.jsx
-import React from "react";
+import React, { useState } from "react";
 import Select from "react-select";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaInfoCircle, FaQuestionCircle, FaTimes, FaPlus } from "react-icons/fa";
 
 const generalAddonOptions = [
   { value: "website", label: "Website" },
@@ -10,6 +11,9 @@ const generalAddonOptions = [
   { value: "foundationYear", label: "Foundation Year" },
   { value: "presentInCountries", label: "Present in Countries" },
   { value: "locationOfEachCountryOffice", label: "Location of Each Country's Office" },
+  { value: "subsidaries", label: "Subsidaries" },
+  { value: "employeeGrowth", label: "Employee Growth" },
+  { value: "contactNumber", label: "Contact Number" },
 ];
 
 const decisionMakerOptions = [
@@ -111,10 +115,11 @@ const decisionMakerOptions = [
   { value: "vpTechnology", label: "Vice President / VP of Technology" },
   { value: "vpHr", label: "Vice President / VP of HR" },
   { value: "vpProduct", label: "Vice President / VP of Product" },
+  { value: "customDecisionMaker", label: "Custom Decision Maker" },
 ];
 
 const customStyles = {
-  control: base => ({
+  control: (base) => ({
     ...base,
     border: "1px solid #ccc",
     boxShadow: "none",
@@ -124,9 +129,9 @@ const customStyles = {
     minHeight: "34px",
     fontSize: "14px",
   }),
-  valueContainer: base => ({ ...base, padding: "0 6px" }),
-  input: base => ({ ...base, margin: 0, padding: 0 }),
-  menu: base => ({
+  valueContainer: (base) => ({ ...base, padding: "0 6px" }),
+  input: (base) => ({ ...base, margin: 0, padding: 0 }),
+  menu: (base) => ({
     ...base,
     borderRadius: "4px",
     boxShadow: "0 2px 5px rgba(0,0,0,0.15)",
@@ -143,26 +148,125 @@ const customStyles = {
 };
 
 const AddonFilters = ({ selectedAddons, setSelectedAddons }) => {
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [customDecisionMakers, setCustomDecisionMakers] = useState([]);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
   const handleGeneralAddonChange = (selectedOptions) => {
     const generalAddons = selectedOptions || [];
-    const decisionMakerAddons = selectedAddons.filter(opt => decisionMakerOptions.some(dm => dm.value === opt.value));
+    const decisionMakerAddons = selectedAddons.filter((opt) =>
+      decisionMakerOptions.some((dm) => dm.value === opt.value && dm.value !== "customDecisionMaker")
+    );
     setSelectedAddons([...generalAddons, ...decisionMakerAddons]);
   };
 
   const handleDecisionMakerChange = (selectedOptions) => {
     const decisionMakerAddons = selectedOptions || [];
-    const generalAddons = selectedAddons.filter(opt => generalAddonOptions.some(ga => ga.value === opt.value));
+    const generalAddons = selectedAddons.filter((opt) =>
+      generalAddonOptions.some((ga) => ga.value === opt.value)
+    );
+    const hasCustom = decisionMakerAddons.some((opt) => opt.value === "customDecisionMaker");
+    if (hasCustom && !showCustomInput) setShowCustomInput(true);
+    else if (!hasCustom && showCustomInput) setShowCustomInput(false);
     setSelectedAddons([...generalAddons, ...decisionMakerAddons]);
   };
 
-  const selectedGeneralAddons = selectedAddons.filter(opt => generalAddonOptions.some(ga => ga.value === opt.value));
-  const selectedDecisionMakerAddons = selectedAddons.filter(opt => decisionMakerOptions.some(dm => dm.value === opt.value));
+  const handleAddCustomDecisionMaker = () => {
+    setCustomDecisionMakers([...customDecisionMakers, ""]);
+  };
+
+  const handleCustomDecisionMakerChange = (index, value) => {
+    const updatedCustoms = [...customDecisionMakers];
+    updatedCustoms[index] = value;
+    setCustomDecisionMakers(updatedCustoms);
+  };
+
+  const selectedGeneralAddons = selectedAddons.filter((opt) =>
+    generalAddonOptions.some((ga) => ga.value === opt.value)
+  );
+  const selectedDecisionMakerAddons = selectedAddons.filter((opt) =>
+    decisionMakerOptions.some((dm) => dm.value === opt.value && dm.value !== "customDecisionMaker")
+  );
 
   return (
-    <div>
-      <h3 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "10px" }}>
-        Select Add-Ons
-      </h3>
+    <div style={{ position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+        <h3 style={{ fontSize: "14px", fontWeight: "bold" }}>Select Add-Ons</h3>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <motion.button
+            onClick={() => setShowTermsModal(true)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              padding: "6px 12px",
+              background: "#080093",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "12px",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <FaInfoCircle /> Information
+          </motion.button>
+          <motion.div
+            style={{ position: "relative" }}
+            onMouseEnter={() => setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+          >
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              style={{
+                width: "24px",
+                height: "24px",
+                background: "#080093",
+                color: "#fff",
+                border: "none",
+                borderRadius: "50%",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px",
+              }}
+            >
+              <FaQuestionCircle />
+            </motion.button>
+            <AnimatePresence>
+              {showTooltip && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  style={{
+                    position: "absolute",
+                    top: "-50px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "#333",
+                    color: "#fff",
+                    padding: "8px 12px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    whiteSpace: "nowrap",
+                    zIndex: 1000,
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  Lorem ipsum dolor sit amet
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </div>
+
       <div style={{ marginBottom: "15px" }}>
         <label style={{ display: "block", marginBottom: "5px", fontSize: "12px" }}>General Add-Ons</label>
         <Select
@@ -187,38 +291,126 @@ const AddonFilters = ({ selectedAddons, setSelectedAddons }) => {
           placeholder="Select decision makers..."
           styles={customStyles}
         />
+        {showCustomInput && (
+          <div style={{ marginTop: "10px", padding: "10px", border: "1px solid #ccc", borderRadius: "4px" }}>
+            <h4 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "10px" }}>Custom Decision Makers</h4>
+            {customDecisionMakers.map((maker, index) => (
+              <div key={index} style={{ marginBottom: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
+                <input
+                  type="text"
+                  value={maker}
+                  onChange={(e) => handleCustomDecisionMakerChange(index, e.target.value)}
+                  placeholder={`Custom Decision Maker ${index + 1}`}
+                  style={{
+                    padding: "5px",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    flex: 1,
+                  }}
+                />
+              </div>
+            ))}
+            <motion.button
+              onClick={handleAddCustomDecisionMaker}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              style={{
+                padding: "6px 12px",
+                background: "#080093",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                fontSize: "12px",
+              }}
+            >
+              <FaPlus /> Add
+            </motion.button>
+          </div>
+        )}
       </div>
 
       <p style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>
         Choose additional data points to include in your list, such as website, email addresses, or decision-maker roles.
       </p>
 
-      {/* Add the "What is EasyList?" section */}
-      <div style={{ marginTop: "20px", padding: "15px", border: "1px solid #e0e0e0", borderRadius: "4px" }}>
-        <h3 style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "10px" }}>What is EasyList?</h3>
-        <ul style={{ listStyleType: "none", paddingLeft: "0" }}>
-          <li style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
-            <span style={{ color: "#28a745", marginRight: "8px" }}>✔</span>
-            EasyList is our straightforward on demand tool designed to help you build personalised company lists from a global database of more than 17+ million companies.
-          </li>
-          <li style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
-            <span style={{ color: "#28a745", marginRight: "8px" }}>✔</span>
-            With access to millions of companies in your local market and worldwide you can refine your searches using 6 different search criteria. These include location (country, region, city...), Category, Subcategory and Sub-Subcategory.
-          </li>
-          <li style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
-            <span style={{ color: "#28a745", marginRight: "8px" }}>✔</span>
-            GDPR Compliance! Target potential prospects by creating your wish list, purchase and download your personalised prospect list in an excel format. Ready to use for your Sales & Marketing campaigns.
-          </li>
-          <li style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
-            <span style={{ color: "#28a745", marginRight: "8px" }}>✔</span>
-            Create and customise your list using the filters below: Categories, Location (Country, State, City...).
-          </li>
-          <li style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
-            <span style={{ color: "#28a745", marginRight: "8px" }}>✔</span>
-            Get your files on email immediately after secure payment (credit card or PayPal)
-          </li>
-        </ul>
-      </div>
+      <AnimatePresence>
+        {showTermsModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                zIndex: 999,
+              }}
+              onClick={() => setShowTermsModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: "#fff",
+                padding: "20px",
+                borderRadius: "8px",
+                boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+                zIndex: 1000,
+                width: "400px",
+                maxHeight: "80vh",
+                overflowY: "auto",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+                <h3 style={{ fontSize: "16px", fontWeight: "bold" }}>Terms and Conditions</h3>
+                <motion.button
+                  onClick={() => setShowTermsModal(false)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    color: "#666",
+                  }}
+                >
+                  <FaTimes />
+                </motion.button>
+              </div>
+              <ul style={{ listStyleType: "none", paddingLeft: "0" }}>
+                <li style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
+                  <span style={{ color: "#28a745", marginRight: "8px" }}>✔</span>
+                  Add-on charges are non-refundable as they also include service and search-related costs, regardless of the results delivered.
+                </li>
+                <li style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
+                  <span style={{ color: "#28a745", marginRight: "8px" }}>✔</span>
+                  In certain cases, specific add-ons requested by the user may not be available through any reliable sources. In such instances, while we regret our inability to fulfill the add-on request, we will proceed to deliver your order with all available and relevant details at our disposal. Please note that no refund will be issued for unavailable add-ons.
+                </li>
+                <li style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
+                  <span style={{ color: "#28a745", marginRight: "8px" }}>✔</span>
+                  Once an order is placed, modifications or changes are not permitted. Refunds will only be issued if we are unable to deliver the basic data promised.
+                </li>
+              </ul>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
